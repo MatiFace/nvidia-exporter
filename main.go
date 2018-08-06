@@ -22,7 +22,6 @@ type Exporter struct {
 	deviceInfo            *prometheus.GaugeVec
 	powerUsage            *prometheus.GaugeVec
 	powerUsageAverage     *prometheus.GaugeVec
-	fanSpeed              *prometheus.GaugeVec
 	memoryTotal           *prometheus.GaugeVec
 	memoryUsed            *prometheus.GaugeVec
 	utilizationMemory     *prometheus.GaugeVec
@@ -109,14 +108,6 @@ func NewExporter() *Exporter {
 			},
 			[]string{"minor"},
 		),
-		fanSpeed: prometheus.NewGaugeVec(
-			prometheus.GaugeOpts{
-				Namespace: namespace,
-				Name:      "fanspeed",
-				Help:      "Fan speed as reported by the device",
-			},
-			[]string{"minor"},
-		),
 		memoryTotal: prometheus.NewGaugeVec(
 			prometheus.GaugeOpts{
 				Namespace: namespace,
@@ -176,7 +167,6 @@ func (e *Exporter) Collect(metrics chan<- prometheus.Metric) {
 	for i := 0; i < len(data.Devices); i++ {
 		d := data.Devices[i]
 		e.deviceInfo.WithLabelValues(d.Index, d.MinorNumber, d.Name, d.UUID).Set(1)
-		e.fanSpeed.WithLabelValues(d.MinorNumber).Set(d.FanSpeed)
 		e.memoryTotal.WithLabelValues(d.MinorNumber).Set(d.MemoryTotal)
 		e.memoryUsed.WithLabelValues(d.MinorNumber).Set(d.MemoryUsed)
 		e.powerUsage.WithLabelValues(d.MinorNumber).Set(d.PowerUsage)
@@ -189,7 +179,6 @@ func (e *Exporter) Collect(metrics chan<- prometheus.Metric) {
 
 	e.deviceCount.Collect(metrics)
 	e.deviceInfo.Collect(metrics)
-	e.fanSpeed.Collect(metrics)
 	e.info.Collect(metrics)
 	e.memoryTotal.Collect(metrics)
 	e.memoryUsed.Collect(metrics)
@@ -205,7 +194,6 @@ func (e *Exporter) Collect(metrics chan<- prometheus.Metric) {
 func (e *Exporter) Describe(descs chan<- *prometheus.Desc) {
 	e.deviceCount.Describe(descs)
 	e.deviceInfo.Describe(descs)
-	e.fanSpeed.Describe(descs)
 	e.info.Describe(descs)
 	e.memoryTotal.Describe(descs)
 	e.memoryUsed.Describe(descs)
